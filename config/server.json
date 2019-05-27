@@ -1,0 +1,38 @@
+{
+  "static": {
+    "root": "ui"
+  },
+  "viewEngine": {
+    "engine": "handlebars",
+    "config": {
+      "preventIndent": true
+    }
+  },
+  "logging": {
+    "request": false
+  },
+  "errors": {
+    "logHttpErrors": true,
+    "reportErrorsAs": "html",
+    "showStack": true
+  },
+  "parsers": {
+    "caseSensitive": true,
+    "trailingSlash": false,
+    "maxParamLength": 100,
+    "bodyLimit": 1048576,
+    "json": true,
+    "urlEncoded": true,
+    "forms": true,
+    "cookies": true
+  },
+  "uploads": {
+    "storage": "/uploads/",
+    "limit": 10485760
+  },
+  "cms": {
+    "enabled": false,
+    "mountPath": "/cms"
+  },
+  "strictRouting": false
+}
