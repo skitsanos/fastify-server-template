@@ -5,21 +5,18 @@ class Echo extends Route
     constructor(instance)
     {
         const config = {
-            method: ['GET', 'POST', 'PUT'],
-            url: '/echo',
-            bodyLimit: 512
+            method: 'GET',
+            url: '/test-render'
         };
         super(instance, config);
     }
 
     handler(req, res)
     {
-        console.log(this.render)
-        res.send({
-            result: {
-                url: req.raw.url
-            }
+        const html = this.render('Hello, {{name}}!', {
+            name: 'Awesome you are'
         });
+        res.send(html);
     }
 }
 

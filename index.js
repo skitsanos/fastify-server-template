@@ -8,7 +8,7 @@ const fastify = require('fastify')({
 
 const app = {
     log: require('./framework/logging/log'),
-    config: require('./config/app'),
+    config: require('./config/server'),
     siteAccess: require('./config/access.json'),
     meta: require('./package'),
     port: process.env.PORT || 3000,
@@ -59,6 +59,7 @@ const app = {
                 });
             });
         },
+
         loadRouteHandlers: () =>
         {
             return new Promise(async (resolve, reject) =>
@@ -95,6 +96,35 @@ const app = {
             app.port = program.port;
         }
 
+        //if specified, allow serving static content
+        if (app.config.static && app.config.static.root)
+        {
+            fastify.register(require('fastify-static'), {
+                root: path.join(__dirname, app.config.static.root)
+            });
+        }
+
+        //enable view engine
+        if (app.config.viewEngine)
+        {
+            switch (app.config.viewEngine.engine.toLowerCase())
+            {
+                case 'handlebars':
+                    fastify.render = (template, data) =>
+                    {
+                        const hbs = require('handlebars');
+                        const ctx = hbs.compile(template, app.config.viewEngine.config);
+                        return ctx(data);
+                    };
+                    break;
+
+                default:
+                    app.log.warn(`View engine ${app.config.viewEngine.engine} is not supported`);
+                    break;
+            }
+        }
+
+        //handle 'not found' requests
         fastify.register(async (instance, options, next) =>
         {
             instance.setNotFoundHandler((req, res) =>
