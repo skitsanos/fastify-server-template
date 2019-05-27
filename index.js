@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const fastify = require('fastify')({
-    logger: true
+    logger: false
 });
 
 const app = {
@@ -113,8 +113,22 @@ const app = {
                     fastify.render = (template, data) =>
                     {
                         const hbs = require('handlebars');
-                        const ctx = hbs.compile(template, app.config.viewEngine.config);
-                        return ctx(data);
+                        //register partials
+                        hbs.registerPartial({
+                            applicationName: app.meta.name
+                        });
+
+                        //render whole thing
+                        try
+                        {
+                            const ctx = hbs.compile(template, app.config.viewEngine.config);
+                            return ctx(data);
+                        } catch (e)
+                        {
+                            app.log.error(e.message);
+                            return {error: {message: e.message}};
+                        }
+
                     };
                     break;
 
