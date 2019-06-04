@@ -19,9 +19,24 @@ class FastifyRoute
         this.instance = instance;
     }
 
-    handler(request, reply)
+    handler(request, response)
     {
-        reply.code(200).send('ok');
+        return new Promise((resolve, reject) =>
+        {
+            if (request.validationError)
+            {
+                console.error(request.validationError);
+                response.status(400).send({
+                    error: {message: request.validationError.message},
+                    validation: request.validationError.validation
+                });
+                return reject(request.validationError);
+            }
+            else
+            {
+                return resolve();
+            }
+        });
     }
 }
 
