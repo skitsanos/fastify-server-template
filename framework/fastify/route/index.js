@@ -25,7 +25,6 @@ class FastifyRoute
         {
             if (request.validationError)
             {
-                console.error(request.validationError);
                 response.status(400).send({
                     error: {message: request.validationError.message},
                     validation: request.validationError.validation
