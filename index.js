@@ -13,10 +13,12 @@ const app = {
     meta: require('./package'),
     port: process.env.PORT || 3000,
 
+    schemas: {},
+
     utils: {
         processRouteHandler: (p) =>
         {
-            app.log.info(`Trying to register router from '${p}'`);
+            app.log.info(`Trying '${p}'`);
             const m = require(p);
             const route = new m();
             app.log.info(`Registering ${route.config.url} for ${route.config.method}`);
@@ -29,51 +31,56 @@ const app = {
 
         parseRouteStore: (path_routes) =>
         {
-            return new Promise((parse_resolve, parse_reject) =>
+            const files = fs.readdirSync(path_routes, {withFileTypes: true});
+
+            //walk through all the items in the path sepcified
+            for (const file of files)
             {
-                fs.readdir(path_routes, {withFileTypes: true}, async (err, files) =>
+                //build the absolute path
+                const p = path.join(path_routes, file.name);
+                if (file.isDirectory())
                 {
-                    if (err)
-                    {
-                        return parse_reject(err);
-                    }
-
-                    //walk through all the items in the path sepcified
-                    for (const file of files)
-                    {
-                        //build the absolute path
-                        const p = path.join(path_routes, file.name);
-                        if (file.isDirectory())
-                        {
-                            //if directory, we run the parser for all the items within the directory
-                            await app.utils.parseRouteStore(p);
-                        }
-                        else if (file.isFile())
-                        {
-                            //process router
-                            app.utils.processRouteHandler(p);
-                        }
-                    }
-
-                    return parse_resolve(files);
-                });
-            });
+                    //if directory, we run the parser for all the items within the directory
+                    app.utils.parseRouteStore(p);
+                }
+                else if (file.isFile())
+                {
+                    //process router
+                    app.utils.processRouteHandler(p);
+                }
+            }
         },
 
         loadRouteHandlers: () =>
         {
-            return new Promise(async (resolve, reject) =>
+            const path_routes = path.join(__dirname, '/routes/');
+            if (!fs.existsSync(path_routes))
             {
-                const path_routes = path.join(__dirname, '/routes/');
-                if (!fs.existsSync(path_routes))
+                fs.mkdir(path_routes);
+            }
+
+            app.utils.parseRouteStore(path_routes);
+        },
+
+        loadSchemas: () =>
+        {
+            const schemasPath = path.join(__dirname, 'schemas');
+            if (fs.existsSync(schemasPath))
+            {
+                const schemasList = fs.readdirSync(schemasPath, {withFileTypes: true});
+                for (const schema of schemasList)
                 {
-                    fs.mkdir(path_routes);
+                    if (schema.isFile())
+                    {
+                        /*const schemaExt = require(path.join(schemasPath, schema.name));
+                        if (schemaExt.prototype && schemaExt.prototype.hasOwnProperty('constructor'))
+                        {
+                            const schemaName = schemaExt.prototype.constructor.name;
+                            app.schemas[schemaName] = schemaExt;
+                        }*/
+                    }
                 }
-
-                await app.utils.parseRouteStore(path_routes);
-
-                resolve();
-            });
+            }
         }
     },
 
@@ -104,25 +111,101 @@ const app = {
             });
         }
 
+        //cookies support
+        if (app.config.cookies)
+        {
+            fastify.register(require('fastify-cookie'));
+            app.log.info('Cookies support: enabled');
+        }
+
         //enable view engine
         if (app.config.viewEngine)
         {
             switch (app.config.viewEngine.engine.toLowerCase())
             {
                 case 'handlebars':
+                    //preload partials
+                    const partialsDir = path.join(__dirname, app.config.viewEngine.partialsDir);
+                    let partials = {};
+
+                    if (fs.existsSync(partialsDir))
+                    {
+                        const files = fs.readdirSync(partialsDir, {withFileTypes: true});
+
+                        for (const partial of files)
+                        {
+                            if (partial.isFile())
+                            {
+                                const partial_name = path.parse(partial.name).name;
+                                app.log.info(`Found partial: ${partial_name}`);
+                                partials[partial_name] = fs.readFileSync(path.join(partialsDir, partial.name)).toString();
+                            }
+                        }
+                    }
+
                     fastify.render = (template, data) =>
                     {
                         const hbs = require('handlebars');
                         //register partials
                         hbs.registerPartial({
-                            applicationName: app.meta.name
+                            applicationName: app.meta.name,
+                            applicationVersion: app.meta.version
                         });
+
+                        hbs.registerPartial(partials);
+
+                        hbs.registerHelper({
+                            applicationName: app.meta.name,
+                            applicationVersion: app.meta.version
+                        });
+
+                        //preload framework helpers
+                        const helpers_path = path.join(__dirname, '/framework/handlebars-helpers');
+                        if (fs.existsSync(helpers_path))
+                        {
+                            const helpers_files = fs.readdirSync(helpers_path, {withFileTypes: true});
+                            for (const helper_file of helpers_files)
+                            {
+                                hbs.registerHelper(require(path.join(helpers_path, helper_file.name)));
+                            }
+                        }
 
                         //render whole thing
                         try
                         {
-                            const ctx = hbs.compile(template, app.config.viewEngine.config);
-                            return ctx(data);
+                            let ctx;
+
+                            switch (typeof template)
+                            {
+                                case 'string':
+                                    ctx = hbs.compile(template, app.config.viewEngine.config);
+                                    break;
+
+                                case 'object':
+                                    const templatesDir = app.config.viewEngine.templatesDir || 'ui';
+                                    const file_path = path.join(__dirname, path.join(templatesDir, template.file));
+
+                                    if (!fs.existsSync(file_path))
+                                    {
+                                        return new Error(`Template ${template.file} is not found`);
+                                    }
+
+                                    try
+                                    {
+                                        const template_content = fs.readFileSync(file_path);
+                                        ctx = hbs.compile(template_content.toString(), app.config.viewEngine.config);
+                                    } catch (e)
+                                    {
+                                        return e;
+                                    }
+                                    break;
+                            }
+
+                            if (ctx)
+                            {
+                                return ctx(data);
+                            }
+
                         } catch (e)
                         {
                             app.log.error(e.message);
@@ -149,13 +232,30 @@ const app = {
             next();
         });
 
-        await app.utils.loadRouteHandlers();
-        app.log.info('Route handlers has been loaded');
+        //app.utils.loadSchemas();
+        app.utils.loadRouteHandlers();
+
+        fastify.addHook('onRequest', (req, res, next) =>
+        {
+            res.header('server', `${app.meta.name} ${app.meta.version}`);
+
+            if (Number(req.headers['upgrade-insecure-requests']) === 1)
+            {
+                //redirect to HTTPS location if requested
+                if (app.config.upgradeInsecureRequests)
+                {
+                    const secureUrl = `https://${req.hostname}${req.raw.url}`;
+
+                    res.header('Vary', 'Upgrade-Insecure-Requests');
+                    res.redirect(302, secureUrl);
+                }
+            }
+            next();
+        });
 
         fastify.ready().then(() =>
         {
             app.log.info('successfully booted!');
-            app.log.info(`Routes:\n${fastify.printRoutes()}`);
         }, (err) =>
         {
             console.log('ready() error:');
