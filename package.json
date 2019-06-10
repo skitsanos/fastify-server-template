@@ -1,0 +1,29 @@
+{
+  "name": "fastify-server-template",
+  "description": "Fastify driven web application",
+  "author": {
+    "name": "skitsanos"
+  },
+  "version": "1.0.3",
+  "dependencies": {
+    "commander": "^2.19.0",
+    "fastify": "^2.1.0",
+    "fastify-cookie": "^3.0.2",
+    "fastify-static": "^2.4.0",
+    "handlebars": "^4.1.2",
+    "moment": "^2.24.0",
+    "winston": "^3.2.1",
+    "winston-transport": "^4.3.0"
+  },
+  "devDependencies": {
+    "link-module-alias": "^1.2.0"
+  },
+  "scripts": {
+    "postinstall": "link-module-alias"
+  },
+  "_moduleAliases": {
+    "~config": "config/",
+    "~framework": "framework/",
+    "~schemas": "schemas/"
+  }
+}
