@@ -1,4 +1,4 @@
-![](https://repository-images.githubusercontent.com/188831518/13b28300-8b63-11e9-833f-b33019e2a8b3)
+![](https://repository-images.githubusercontent.com/188831518/a0f5d780-8b63-11e9-942d-e62b183c5578)
 # fastify-server-template
 Template for building REST APIs and web applications running on [Fastify](https://www.fastify.io)
 
