@@ -1,6 +1,7 @@
 const program = require('commander');
 const fs = require('fs');
 const path = require('path');
+const fsutils = require('~framework/utils/fs-utils');
 
 const fastify = require('fastify')({
     logger: false
@@ -20,7 +21,7 @@ const app = {
         {
             app.log.info(`Trying '${p}'`);
             const m = require(p);
-            const route = new m();
+            const route = new m(fastify);
             app.log.info(`Registering ${route.config.url} for ${route.config.method}`);
 
             const options = route.config;
@@ -72,6 +73,8 @@ const app = {
                 {
                     if (schema.isFile())
                     {
+                        const schemaContent = fsutils.readFile(path.join(schemasPath, schema.name));
+                        fastify.addSchema(JSON.parse(schemaContent));
                         /*const schemaExt = require(path.join(schemasPath, schema.name));
                         if (schemaExt.prototype && schemaExt.prototype.hasOwnProperty('constructor'))
                         {
@@ -232,7 +235,7 @@ const app = {
             next();
         });
 
-        //app.utils.loadSchemas();
+        app.utils.loadSchemas();
         app.utils.loadRouteHandlers();
 
         fastify.addHook('onRequest', (req, res, next) =>
