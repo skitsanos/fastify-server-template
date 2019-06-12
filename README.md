@@ -1,6 +1,8 @@
 ![](https://repository-images.githubusercontent.com/188831518/a0f5d780-8b63-11e9-942d-e62b183c5578)
 
-Template for building REST APIs and web applications running on [Fastify](https://www.fastify.io)
+Template for building REST APIs and web applications running on [Fastify](https://www.fastify.io). The idea behind this project is to minimize an effort on creating web application backend through unified server core and rather concentrate on writing URL/route handlers.
+
+So that's what it does. all you need to do is to write your route handlers.
 
 ### How to install
 
