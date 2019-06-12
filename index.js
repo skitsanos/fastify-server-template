@@ -8,9 +8,9 @@ const fastify = require('fastify')({
 });
 
 const app = {
-    log: require('./framework/logging/log'),
-    config: require('./config/server'),
-    siteAccess: require('./config/access.json'),
+    log: require('~framework/logging/log'),
+    config: require('~config/server'),
+    siteAccess: require('~config/access.json'),
     meta: require('./package'),
     port: process.env.PORT || 3000,
 
@@ -24,6 +24,39 @@ const app = {
             const route = new m(fastify);
             app.log.info(`Registering ${route.config.url} for ${route.config.method}`);
 
+            //check if route has a path alias
+            if (route.config.hasOwnProperty('alias'))
+            {
+                app.log.info(`Processing aliases ${route.config.alias}...`);
+                let aliasedOptions = Object.assign({}, route.config);
+                aliasedOptions.handler = route.handler;
+
+                switch (typeof route.config.alias)
+                {
+                    case 'string':
+                        aliasedOptions.url = aliasedOptions.alias;
+                        delete aliasedOptions.alias;
+                        fastify.route(aliasedOptions);
+                        break;
+
+                    case 'object':
+                        if (Array.isArray(aliasedOptions.alias))
+                        {
+                            for (const alias of aliasedOptions.alias)
+                            {
+                                let eachAliasOption = Object.assign({}, aliasedOptions);
+                                delete eachAliasOption.alias;
+                                eachAliasOption.url = alias;
+                                fastify.route(eachAliasOption);
+                            }
+
+                        }
+
+                        break;
+                }
+            }
+
+            //process routes without alias
             const options = route.config;
             options.handler = route.handler;
 
@@ -75,12 +108,6 @@ const app = {
                     {
                         const schemaContent = fsutils.readFile(path.join(schemasPath, schema.name));
                         fastify.addSchema(JSON.parse(schemaContent));
-                        /*const schemaExt = require(path.join(schemasPath, schema.name));
-                        if (schemaExt.prototype && schemaExt.prototype.hasOwnProperty('constructor'))
-                        {
-                            const schemaName = schemaExt.prototype.constructor.name;
-                            app.schemas[schemaName] = schemaExt;
-                        }*/
                     }
                 }
             }
