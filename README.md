@@ -4,6 +4,9 @@ Template for building REST APIs and web applications running on [Fastify](https:
 
 So that's what it does. all you need to do is to write your route handlers.
 
+---
+
+
 ### How to install
 
 Clone sources locally
