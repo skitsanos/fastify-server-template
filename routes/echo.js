@@ -14,7 +14,6 @@ class Echo extends Route
 
     handler(req, res)
     {
-        console.log(req.accepts());
         res.send({
             result: {
                 url: req.raw.url

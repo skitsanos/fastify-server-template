@@ -140,9 +140,17 @@ const app = {
         //if specified, allow serving static content
         if (serverConfig.static && serverConfig.static.root)
         {
-            fastify.register(require('fastify-static'), {
-                root: path.join(__dirname, serverConfig.static.root)
-            });
+            const staticPath = path.join(__dirname, serverConfig.static.root);
+            if (fs.existsSync(staticPath))
+            {
+                fastify.register(require('fastify-static'), {
+                    root: staticPath
+                });
+            }
+            else
+            {
+                app.log.warn(`Static content path '${serverConfig.static.root}' is not found`);
+            }
         }
 
         //cookies support
