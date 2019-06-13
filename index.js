@@ -155,7 +155,8 @@ const app = {
             {
                 case 'handlebars':
                     //preload partials
-                    const partialsDir = path.join(__dirname, app.config.viewEngine.partialsDir);
+                    const partialsBitsPath = app.config.viewEngine.partialsDir || 'ui/partials';
+                    const partialsDir = path.join(__dirname, partialsBitsPath);
                     let partials = {};
 
                     if (fs.existsSync(partialsDir))

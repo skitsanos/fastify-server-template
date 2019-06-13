@@ -1,15 +1,21 @@
 {
+  "upgradeInsecureRequests": false,
   "static": {
     "root": "ui"
   },
   "viewEngine": {
     "engine": "handlebars",
+    "templatesDir": "ui",
+    "partialsDir": "ui/partials",
     "config": {
       "preventIndent": true
     }
   },
   "logging": {
     "request": false
+  },
+  "cookies": {
+    "config": {}
   },
   "errors": {
     "logHttpErrors": true,
@@ -23,8 +29,7 @@
     "bodyLimit": 1048576,
     "json": true,
     "urlEncoded": true,
-    "forms": true,
-    "cookies": true
+    "forms": true
   },
   "uploads": {
     "storage": "/uploads/",
