@@ -2,14 +2,19 @@ const program = require('commander');
 const fs = require('fs');
 const path = require('path');
 const fsutils = require('~framework/utils/fs-utils');
+const serverConfig = require('~config/server.json');
 
 const fastify = require('fastify')({
-    logger: false
+    logger: true,
+    disableRequestLogging: !serverConfig.logging.request,
+    ignoreTrailingSlash: serverConfig.strictRouting,
+    maxParamLength: serverConfig.parsers.maxParamLength,
+    caseSensitive: serverConfig.parsers.caseSensitive,
+    bodyLimit: serverConfig.parsers.bodyLimit
 });
 
 const app = {
     log: require('~framework/logging/log'),
-    config: require('~config/server'),
     siteAccess: require('~config/access.json'),
     meta: require('./package'),
     port: process.env.PORT || 3000,
@@ -19,15 +24,15 @@ const app = {
     utils: {
         processRouteHandler: (p) =>
         {
-            app.log.info(`Trying '${p}'`);
+            app.log.info(`trying '${p}'`);
             const m = require(p);
             const route = new m(fastify);
-            app.log.info(`Registering ${route.config.url} for ${route.config.method}`);
+            app.log.info(`registering ${route.config.url} for ${route.config.method}`);
 
             //check if route has a path alias
             if (route.config.hasOwnProperty('alias'))
             {
-                app.log.info(`Processing aliases ${route.config.alias}...`);
+                app.log.info(`processing aliases ${route.config.alias}...`);
                 let aliasedOptions = Object.assign({}, route.config);
                 aliasedOptions.handler = route.handler;
 
@@ -49,7 +54,6 @@ const app = {
                                 eachAliasOption.url = alias;
                                 fastify.route(eachAliasOption);
                             }
-
                         }
 
                         break;
@@ -126,7 +130,7 @@ const app = {
 
         if (!program.port)
         {
-            app.log.info(`Port is not set, will be using ${app.port} as default`);
+            app.log.info(`port is not set, will be using ${app.port} as default`);
         }
         else
         {
@@ -134,28 +138,28 @@ const app = {
         }
 
         //if specified, allow serving static content
-        if (app.config.static && app.config.static.root)
+        if (serverConfig.static && serverConfig.static.root)
         {
             fastify.register(require('fastify-static'), {
-                root: path.join(__dirname, app.config.static.root)
+                root: path.join(__dirname, serverConfig.static.root)
             });
         }
 
         //cookies support
-        if (app.config.cookies)
+        if (serverConfig.cookies)
         {
             fastify.register(require('fastify-cookie'));
-            app.log.info('Cookies support: enabled');
+            app.log.info('cookies support: enabled');
         }
 
         //enable view engine
-        if (app.config.viewEngine)
+        if (serverConfig.viewEngine)
         {
-            switch (app.config.viewEngine.engine.toLowerCase())
+            switch (serverConfig.viewEngine.engine.toLowerCase())
             {
                 case 'handlebars':
                     //preload partials
-                    const partialsBitsPath = app.config.viewEngine.partialsDir || 'ui/partials';
+                    const partialsBitsPath = serverConfig.viewEngine.partialsDir || 'ui/partials';
                     const partialsDir = path.join(__dirname, partialsBitsPath);
                     let partials = {};
 
@@ -209,11 +213,11 @@ const app = {
                             switch (typeof template)
                             {
                                 case 'string':
-                                    ctx = hbs.compile(template, app.config.viewEngine.config);
+                                    ctx = hbs.compile(template, serverConfig.viewEngine.config);
                                     break;
 
                                 case 'object':
-                                    const templatesDir = app.config.viewEngine.templatesDir || 'ui';
+                                    const templatesDir = serverConfig.viewEngine.templatesDir || 'ui';
                                     const file_path = path.join(__dirname, path.join(templatesDir, template.file));
 
                                     if (!fs.existsSync(file_path))
@@ -224,7 +228,7 @@ const app = {
                                     try
                                     {
                                         const template_content = fs.readFileSync(file_path);
-                                        ctx = hbs.compile(template_content.toString(), app.config.viewEngine.config);
+                                        ctx = hbs.compile(template_content.toString(), serverConfig.viewEngine.config);
                                     } catch (e)
                                     {
                                         return e;
@@ -242,12 +246,11 @@ const app = {
                             app.log.error(e.message);
                             return {error: {message: e.message}};
                         }
-
                     };
                     break;
 
                 default:
-                    app.log.warn(`View engine ${app.config.viewEngine.engine} is not supported`);
+                    app.log.warn(`view engine ${serverConfig.viewEngine.engine} is not supported`);
                     break;
             }
         }
@@ -263,6 +266,17 @@ const app = {
             next();
         });
 
+        fastify.setErrorHandler((error, req, res) =>
+        {
+            res.status(error.statusCode).send({error: {message: error.message}});
+        });
+
+        //Add accepts parser to fastify
+        if (serverConfig.parsers.accepts)
+        {
+            fastify.register(require('fastify-accepts'));
+        }
+
         app.utils.loadSchemas();
         app.utils.loadRouteHandlers();
 
@@ -273,7 +287,7 @@ const app = {
             if (Number(req.headers['upgrade-insecure-requests']) === 1)
             {
                 //redirect to HTTPS location if requested
-                if (app.config.upgradeInsecureRequests)
+                if (serverConfig.upgradeInsecureRequests)
                 {
                     const secureUrl = `https://${req.hostname}${req.raw.url}`;
 
@@ -281,6 +295,32 @@ const app = {
                     res.redirect(302, secureUrl);
                 }
             }
+
+            /*
+            Remove the X-Powered-By header to make it slightly harder for attackers to see what potentially-vulnerable
+            technology powers your site.
+             */
+            res.header('x-powered-by', app.meta.name);
+
+            /*
+            Helps prevent browsers from trying to guess (“sniff”) the MIME type, which can have security implications.
+             */
+            res.header('X-Content-Type-Options', 'nosniff');
+
+            /*
+            The X-DNS-Prefetch-Control header tells browsers whether they should do DNS prefetching. Turning it on may
+            not work—not all browsers support it in all situations—but turning it off should disable it on all
+            supported browsers.
+             */
+            res.header('X-DNS-Prefetch-Control', 'off');
+
+            /*
+            The X-Frame-Options header tells browsers to prevent your webpage from being put in an iframe. When
+            browsers load iframes, they’ll check the value of the X-Frame-Options header and abort loading
+            if it’s not allowed
+             */
+            res.header('X-Frame-Options', 'DENY');
+
             next();
         });
 
@@ -289,7 +329,7 @@ const app = {
             app.log.info('successfully booted!');
         }, (err) =>
         {
-            console.log('ready() error:');
+            app.log.error('ready() error:');
             console.log(err);
         });
 

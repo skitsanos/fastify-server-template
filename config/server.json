@@ -12,7 +12,7 @@
     }
   },
   "logging": {
-    "request": false
+    "request": true
   },
   "cookies": {
     "config": {}
@@ -23,13 +23,11 @@
     "showStack": true
   },
   "parsers": {
+    "accepts": true,
     "caseSensitive": true,
     "trailingSlash": false,
     "maxParamLength": 100,
-    "bodyLimit": 1048576,
-    "json": true,
-    "urlEncoded": true,
-    "forms": true
+    "bodyLimit": 1048576
   },
   "uploads": {
     "storage": "/uploads/",
