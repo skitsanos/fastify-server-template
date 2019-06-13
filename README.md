@@ -42,3 +42,48 @@ Although if you are running full blown application with HTML rendering via [Hand
   /schemas
   /ui
 ```
+### Configuring your server
+
+Although this template allows you to run your server as it is, there is number of things you can configure by modifying _/config/server.json_ file.
+
+#### Allowing serving static content
+
+```
+"static": {
+    "root": "ui"
+  },
+``` 
+
+Setting _static.root_ property to 'ui' will enable serving static content from _{server root}/ui_ folder.
+
+#### Cookies support
+
+```
+"cookies": {}
+```
+
+If configuration has _cookies_ section, server will enable _fastify-cookie_ plugin. This plugin's cookie parsing works via Fastify's onRequest hook. More details about this plugin you can read here: [https://github.com/fastify/fastify-cookie](https://github.com/fastify/fastify-cookie)
+
+#### Enabling View Engine
+
+>For the moment only [handlebars](https://handlebarsjs.com) is supported. 
+
+```
+ "viewEngine": {
+    "engine": "handlebars",
+    "templatesDir": "ui",
+    "partialsDir": "ui/partials",
+    "config": {
+      "preventIndent": true
+    }
+  },
+```
+
+#### Upgrading insecure requests
+The HTTP Upgrade-Insecure-Requests request header sends a signal to the server expressing the client's preference for an encrypted and authenticated response, and that it can successfully handle the upgrade-insecure-requests CSP directive.
+
+```
+"upgradeInsecureRequests": false,
+```
+
+If enabled, once request received with _upgrade-insecure-requests_ HTTP header, server will redirect request to HTTPS version.
