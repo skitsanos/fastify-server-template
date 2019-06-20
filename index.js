@@ -15,7 +15,6 @@ const fastify = require('fastify')({
 
 const app = {
     log: require('~framework/logging/log'),
-    siteAccess: require('~config/access.json'),
     meta: require('./package'),
     port: process.env.PORT || 3000,
 
