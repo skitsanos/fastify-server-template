@@ -262,12 +262,24 @@ const app = {
             }
         }
 
+        const corsFile = path.join(__dirname, 'config/cors.json');
+        if (fs.existsSync(corsFile))
+        {
+            app.log.info('Processing CORS options');
+            fastify.register(require('fastify-cors'), require(corsFile));
+        }
+
         //handle 'not found' requests
         fastify.register(async (instance, options, next) =>
         {
             instance.setNotFoundHandler((req, res) =>
             {
-                res.send({error: {message: 'Resource not found', url: req.raw.url}});
+                res.send({
+                    error: {
+                        message: 'Resource not found',
+                        url: req.raw.url
+                    }
+                });
             });
 
             next();
