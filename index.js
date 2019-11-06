@@ -354,7 +354,7 @@ const app = {
 
         try
         {
-            await fastify.listen(app.port);
+            await fastify.listen(app.port, '0.0.0.0');
             app.log.info(`server listening on ${fastify.server.address().port}`);
 
         } catch (err)
