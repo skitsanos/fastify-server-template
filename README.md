@@ -87,3 +87,17 @@ The HTTP Upgrade-Insecure-Requests request header sends a signal to the server e
 ```
 
 If enabled, once request received with _upgrade-insecure-requests_ HTTP header, server will redirect request to HTTPS version.
+
+#### CORS
+
+CORS default configuration (/config/cors.js)
+
+```json
+{
+  "origin": "*",
+  "allowedHeaders": [
+    "Content-Type",
+    "Authorization"
+  ]
+}
+```
