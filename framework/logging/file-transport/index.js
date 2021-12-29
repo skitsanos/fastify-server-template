@@ -10,7 +10,7 @@ class FileTransport extends Transport
 
     log(info, callback)
     {
-        fs.appendFile(process.cwd() + '/app.log', `${info.level} ${info.message}\n`, (err) =>
+        fs.appendFile(process.cwd() + '/app.log', `${info.level} ${info.message}\n`, err =>
         {
             if (err)
             {

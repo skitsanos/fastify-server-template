@@ -4,7 +4,7 @@ const path = require('path');
 const processAppRoot = process.mainModule.paths[0].split('node_modules')[0].slice(0, -1);
 
 module.exports = {
-    exist: (filepath) =>
+    exist: filepath =>
     {
         if (filepath.indexOf('~') === 0)
         {
@@ -14,7 +14,7 @@ module.exports = {
 
         return fs.existsSync(filepath);
     },
-    readFile: (filepath) =>
+    readFile: filepath =>
     {
         if (filepath.indexOf('~') === 0)
         {

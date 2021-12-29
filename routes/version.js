@@ -1,13 +1,13 @@
 const Route = require(process.cwd() + '/framework/fastify/route');
+const meta = require('~package');
 
-class Echo extends Route
+class VersionRoute extends Route
 {
     constructor(instance)
     {
         const config = {
-            method: ['GET', 'POST', 'PUT'],
-            url: '/echo',
-            alias: '/talkback',
+            method: 'GET',
+            url: '/version',
             bodyLimit: 512
         };
         super(instance, config);
@@ -17,10 +17,11 @@ class Echo extends Route
     {
         res.send({
             result: {
-                url: req.raw.url
+                name: meta.name,
+                version: meta.version
             }
         });
     }
 }
 
-module.exports = Echo;
+module.exports = VersionRoute;
