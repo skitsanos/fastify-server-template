@@ -12,7 +12,7 @@
     "commander": "^14.0.0",
     "dayjs": "^1.11.13",
     "fastify": "^5.3.3",
-    "fastify-plugin": "^4.5.1",
+    "fastify-plugin": "^5.0.0",
     "@fastify/accepts": "^5.0.2",
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.0.1",
