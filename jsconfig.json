@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "es2020",
+    "module": "commonjs",
+    "allowSyntheticDefaultImports": true,
+    "checkJs": true
+  },
+  "exclude": ["node_modules", "dist"]
+}

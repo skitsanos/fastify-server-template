@@ -5,30 +5,19 @@
     "name": "skitsanos"
   },
   "version": "1.1.5",
-  "dependencies": {
-    "chance": "^1.1.8",
-    "commander": "^14.0.0",
-    "dayjs": "^1.10.7",
-    "fastify": "^5.0.0",
-    "@fastify/accepts": "^5.0.0",
-    "@fastify/cookie": "^11.0.1",
-    "@fastify/cors": "^11.0.0",
-    "@fastify/static": "^8.0.0",
-    "handlebars": "^4.7.7",
-    "mockjs": "^1.1.0",
-    "winston": "^3.3.3",
-    "winston-transport": "^4.4.1"
-  },
-  "devDependencies": {
-    "link-module-alias": "^1.2.0"
-  },
   "scripts": {
-    "postinstall": "link-module-alias"
+    "start": "node src/index.js"
   },
-  "_moduleAliases": {
-    "~package": "package.json",
-    "~config": "config/",
-    "~framework": "framework/",
-    "~schemas": "schemas/"
+  "dependencies": {
+    "commander": "^14.0.0",
+    "dayjs": "^1.11.13",
+    "fastify": "^5.3.3",
+    "fastify-plugin": "^4.5.1",
+    "@fastify/accepts": "^5.0.2",
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^11.0.1",
+    "@fastify/static": "^8.1.1",
+    "handlebars": "^4.7.8",
+    "pino-pretty": "^13.0.0"
   }
 }

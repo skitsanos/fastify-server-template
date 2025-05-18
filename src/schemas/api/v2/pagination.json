@@ -1,0 +1,27 @@
+{
+  "$id": "pagination",
+  "type": "object",
+  "properties": {
+    "limit": { 
+      "type": "integer",
+      "description": "Number of items per page"
+    },
+    "offset": { 
+      "type": "integer",
+      "description": "Number of items to skip"
+    },
+    "total": { 
+      "type": "integer",
+      "description": "Total number of items"
+    },
+    "totalPages": { 
+      "type": "integer",
+      "description": "Total number of pages"
+    },
+    "currentPage": { 
+      "type": "integer",
+      "description": "Current page number"
+    }
+  },
+  "required": ["limit", "offset", "total"]
+}

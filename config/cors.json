@@ -1,7 +1,0 @@
-{
-  "origin": "*",
-  "allowedHeaders": [
-    "Content-Type",
-    "Authorization"
-  ]
-}

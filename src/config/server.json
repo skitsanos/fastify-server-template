@@ -1,0 +1,50 @@
+{
+  "upgradeInsecureRequests": false,
+  "host": "0.0.0.0",
+  "static": {
+    "root": "ui"
+  },
+  "viewEngine": {
+    "engine": "handlebars",
+    "templatesDir": "ui",
+    "partialsDir": "ui/partials",
+    "config": {
+      "preventIndent": true
+    }
+  },
+  "logging": {
+    "request": true,
+    "level": "info",
+    "timeFormat": "DD/MMM/YYYY:HH:mm:ss ZZ"
+  },
+  "cookies": {
+    "config": {}
+  },
+  "errors": {
+    "logHttpErrors": true,
+    "reportErrorsAs": "html",
+    "showStack": true
+  },
+  "parsers": {
+    "accepts": true,
+    "caseSensitive": true,
+    "trailingSlash": false,
+    "maxParamLength": 100,
+    "bodyLimit": 1048576
+  },
+  "uploads": {
+    "storage": "/uploads/",
+    "limit": 10485760
+  },
+  "cms": {
+    "enabled": false,
+    "mountPath": "/cms"
+  },
+  "api": {
+    "documentation": true,
+    "routesDocumentationPath": "/api/routes",
+    "schemasDocumentationPath": "/api/schemas",
+    "versionIndex": true
+  },
+  "strictRouting": false
+}
